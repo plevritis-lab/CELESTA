@@ -1,0 +1,21 @@
+Package: CELESTA
+Title: Cell type identification with spatial information
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Weiruo",
+           family = "Zhang",
+           role = c("aut", "cre"),
+           email = "weiruo16@stanford.edu")
+Description: Automate machine learning cell type identification using both protein expressions and cell neighborhood information for multiplexed in situ imaging data.
+License: Apache License (>= 2)
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1.9001
+Imports:
+	Rmixmod,
+        spdep,
+        ggplot2,
+        reshape2
+Depends: 
+    R (>= 2.10)
