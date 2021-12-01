@@ -2,10 +2,39 @@
 % Please edit documentation in R/CELESTA_functions.R
 \name{GetCoords}
 \alias{GetCoords}
-\title{Get coordinates}
+\title{GetCoords}
 \usage{
-GetCoords(CelestaObj, imaging_data_file)
+GetCoords(imaging_data_file)
+}
+\arguments{
+\item{imaging_data_file}{segmented imaging data.
+The first column must contain the cell types to be inferred. The second
+column must contain the lineage information with the following format
+(without spaces): # _ # _ #.
+\itemize{
+\item The first number indicates round. Cell types with the same lineage level
+are inferred at the same round. An higher number indicates higher cell-type
+resolution. For example, immune cells -> CD3+ T cells -> CD4+ T cells.
+\item The second number indicates the previous lineage cell type number for the
+current cell type. For example, the second number for CD3+ T cell is 5
+because it is a subtype of immune cells which have cell type number 5.
+\item The third number is a number assigned to the cell type
+(i.e. cell type number).
+}
+
+The third column and beyond are columns for protein markers.
+\itemize{
+\item If a protein marker is known to be expressed for that cell type, then it
+is denoted by a "1".
+\item If a protein marker is known to not express for a cell type, then it is
+denoted by a "0".
+\item If the protein marker is irrelevant or uncertain to express for a cell
+type, then it is denoted by "NA".
+}}
+}
+\value{
+the x, y coordinates of each cell
 }
 \description{
-Get coordinates
+Gets the x, y coordinates of each cell
 }

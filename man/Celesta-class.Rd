@@ -4,7 +4,78 @@
 \name{Celesta-class}
 \alias{Celesta-class}
 \alias{Celesta}
-\title{Create CELESTA object}
+\title{Celesta}
 \description{
-Create CELESTA object
+Celesta object definition
 }
+\section{Slots}{
+
+\describe{
+\item{\code{project_name}}{name of the project (used in file names)}
+
+\item{\code{prior_info}}{user-defined cell-type signature matrix.
+
+The data should contain two columns (name X and Y) for the x, y coordinates
+and a column for each protein marker. Each row represents the data for a
+single cell, including its x, y coordinates and expression for each protein
+marker.}
+
+\item{\code{marker_exp_matrix}}{transformed protein marker expression (or original
+segmentation protein marker expression if transformation is not specified)}
+
+\item{\code{original_exp}}{original protein marker expression (containing only the
+protein markers specified in \code{prior_info})}
+
+\item{\code{cell_ID}}{the IDs of the cells (from 1 to the total number of cells)}
+
+\item{\code{lineage_info}}{the lineage information from \code{prior_info} parsed into
+round, previous cell type, and cell type number columns}
+
+\item{\code{coords}}{the x, y coordinates of each cell}
+
+\item{\code{cell_prob}}{cell type probability for each cell}
+
+\item{\code{final_cell_type_assignment}}{the final cell type assignments}
+
+\item{\code{nb_list}}{the list of N-nearest neighbors}
+
+\item{\code{total_rounds}}{the maximum round value}
+
+\item{\code{cell_nb_in_bandwidth}}{the cells located within a bandwidth to cell \emph{c}}
+
+\item{\code{cell_nb_dist}}{the distance of each cell to cell \emph{c} within a bandwidth}
+
+\item{\code{initial_pri_matrix}}{user defined cell-type marker matrix for a specific
+round}
+
+\item{\code{anchor_cell_type_assignment}}{the anchor cell type assignments}
+
+\item{\code{dist_from_nearest_assigned_cell}}{the distance from the nearest assigned
+cell}
+
+\item{\code{nb_cell_type}}{cell types of the neighboring cells for index cells}
+
+\item{\code{marker_exp_prob}}{the marker expression probability for each cell}
+
+\item{\code{current_scoring_matrix}}{the current scoring matrix
+(number_cells x number_cell_type)}
+
+\item{\code{current_pri_matrix}}{the updated cell-type marker matrix}
+
+\item{\code{current_cell_prob}}{the current cell probability
+(number_cells x number_cell_type)}
+
+\item{\code{current_cell_type_assignment}}{the current cell type assignments
+(number_cells x total_rounds)}
+
+\item{\code{starting_cell_type_assignment}}{the initial cell type assignments
+(number_cells x total_rounds)}
+
+\item{\code{current_beta}}{the current beta values}
+
+\item{\code{unassigned_cells}}{cells not assigned a cell type for each round and
+iteration}
+
+\item{\code{assigned_cells}}{cells with an assigned cell type}
+}}
+

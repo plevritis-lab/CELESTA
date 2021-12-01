@@ -62,6 +62,7 @@ library(Rmixmod)
 library(spdep)
 library(ggplot2)
 library(reshape2)
+library(zeallot)
 
 ### The pre-saved imaging data is taken from reg009 of the published CODEX data Schurch et al. Cell,2020
 ### Create Celesta object. It requires a title for the project. It also required the segmented input file and user-defined cell-type signature matrix.Please refer to the Inputs session below.
