@@ -6,10 +6,11 @@
 \usage{
 PlotExpProb(
   celesta_obj,
-  marker_to_use,
   size_to_use = 1,
   width_to_use = 5,
-  height_to_use = 4
+  height_to_use = 4,
+  save_plot = TRUE,
+  output_dir = "."
 )
 }
 \arguments{
@@ -21,6 +22,12 @@ PlotExpProb(
 \item{width_to_use}{the width of the plot}
 
 \item{height_to_use}{the height of the plot}
+
+\item{save_plot}{whether to save the plot}
+
+\item{output_dir}{the path to the directory to where the plot will be
+outputted. This defaults to the directory containing CELESTA_functions.R.
+Note that the directory must exist.}
 }
 \value{
 writes a plot of the expression probabilities for each marker

@@ -29,8 +29,8 @@ round}
 \item{cell_type_num}{the cell types associated with the current round}
 }
 \value{
-updates the prior knowledge matrix with information from cells assigned
-to each cell type
+updates the prior knowledge matrix with information from cells
+assigned to each cell type
 }
 \description{
 Updates prior knowledge matrix of the cell type signatures

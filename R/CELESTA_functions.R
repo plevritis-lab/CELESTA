@@ -535,6 +535,7 @@ AssignCells <- function(celesta_obj,
 #' @param save_plot whether to save the plot
 #' @param output_dir the path to the directory to where the plot will be
 #' outputted. This defaults to the directory containing CELESTA_functions.R.
+#' Note that the directory must exist.
 #' @return writes the final cell type assignment plot
 #' @export
 #' @md
@@ -622,14 +623,14 @@ PlotCellsAnyCombination <- function(cell_type_assignment_to_plot,
 #' @param save_plot whether to save the plot
 #' @param output_dir the path to the directory to where the plot will be
 #' outputted. This defaults to the directory containing CELESTA_functions.R.
+#' Note that the directory must exist.
 #' @return writes a plot of the expression probabilities for each marker
 #' @export
 PlotExpProb <- function(celesta_obj,
-                        marker_to_use,
                         size_to_use = 1,
                         width_to_use = 5,
                         height_to_use = 4,
-                        save_plots = TRUE,
+                        save_plot = TRUE,
                         output_dir = ".") {
   coords <- celesta_obj@coords
   marker_exp_prob <- celesta_obj@marker_exp_prob
@@ -704,8 +705,8 @@ PlotExpProb <- function(celesta_obj,
         dpi = 300
       )
     }
-    return(g)
   }
+  return(g)
 }
 ################################################################################
 ################################################################################

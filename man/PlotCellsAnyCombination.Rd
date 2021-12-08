@@ -10,7 +10,9 @@ PlotCellsAnyCombination(
   prior_info,
   cell_number_to_use,
   cell_type_colors = c(palette()[2:7], "white"),
-  test_size = 1
+  test_size = 1,
+  save_plot = TRUE,
+  output_dir = "."
 )
 }
 \arguments{
@@ -32,6 +34,12 @@ marker.}
 \item{cell_type_colors}{the colors for the cell types}
 
 \item{test_size}{the size of the points in the plot}
+
+\item{save_plot}{whether to save the plot}
+
+\item{output_dir}{the path to the directory to where the plot will be
+outputted. This defaults to the directory containing CELESTA_functions.R.
+Note that the directory must exist.}
 }
 \value{
 writes the final cell type assignment plot
