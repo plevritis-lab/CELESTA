@@ -47,7 +47,7 @@ CELESTA requires dependency on the following R packages:
 
 ## Usage
 
-```{r,results='hide',message=FALSE}
+```{r,results='hide',message=FALSE, eval = FALSE}
 library(CELESTA)
 library(Rmixmod)
 library(spdep)
