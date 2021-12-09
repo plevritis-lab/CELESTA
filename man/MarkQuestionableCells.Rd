@@ -2,7 +2,7 @@
 % Please edit documentation in R/CELESTA_functions.R
 \name{MarkQuestionableCells}
 \alias{MarkQuestionableCells}
-\title{Mark questionable cells}
+\title{MarkQuestionableCells}
 \usage{
 MarkQuestionableCells(
   cell_activation_prob,
@@ -10,6 +10,21 @@ MarkQuestionableCells(
   low_marker_threshold
 )
 }
+\arguments{
+\item{cell_activation_prob}{the protein marker expressions for a single cell}
+
+\item{high_marker_threshold}{upper bound used to filter out questionable
+cells}
+
+\item{low_marker_threshold}{lower bound used to filter out questionable
+cells}
+}
+\value{
+whether a cell is questionable or not
+}
 \description{
-Mark questionable cells
+Determine if a cell is questionable.
+
+A cell is questionable if \emph{all} of its protein marker expressions are below
+the \code{lower_marker_threshold} or above the \code{high_marker_threshold}.
 }

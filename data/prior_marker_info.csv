@@ -1,0 +1,17 @@
+,Lineage_level,CD31 - vasculature:Cyc_19_ch_3,CD34 - vasculature:Cyc_20_ch_3,Cytokeratin - epithelia:Cyc_10_ch_2,aSMA - smooth muscle:Cyc_11_ch_2,Podoplanin - lymphatics:Cyc_19_ch_4,CD45 - hematopoietic cells:Cyc_4_ch_2,CD15 - granulocytes:Cyc_14_ch_2,CD3 - T cells:Cyc_16_ch_4,CD20 - B cells:Cyc_8_ch_3,CD11c - DCs:Cyc_12_ch_3,CD163 - macrophages:Cyc_17_ch_3,CD68 - macrophages:Cyc_18_ch_4,CD38 - multifunctional:Cyc_20_ch_4,CD56 - NK cells:Cyc_10_ch_4,CD8 - cytotoxic T cells:Cyc_3_ch_2,CD4 - T helper cells:Cyc_6_ch_3,CD45RO - memory cells:Cyc_18_ch_3,FOXP3 - regulatory T cells:Cyc_2_ch_3
+vasculature,1_0_1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+tumor cells,1_0_2,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+aSMA+ stroma,1_0_3,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+lymphatics,1_0_4,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0
+immune cells,1_0_5,0,0,0,0,0,1,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+CD3+ T cells,2_5_6,0,0,0,0,0,NA,0,1,0,0,0,0,0,0,NA,NA,NA,NA
+CD15+ granulocytes,2_5_7,0,0,0,0,0,NA,1,0,0,0,0,NA,0,0,0,0,NA,0
+B cells,2_5_8,0,0,0,0,0,NA,0,0,1,0,0,0,0,0,0,0,0,0
+CD11c+ DCs,2_5_9,0,0,0,0,0,NA,0,0,0,1,0,0,0,0,0,0,0,0
+CD68+CD163+ macrophages,2_5_10,0,0,0,0,0,NA,0,0,0,0,1,1,0,0,0,0,NA,0
+plasma cells,2_5_11,0,0,0,0,0,NA,0,0,0,0,0,0,1,0,0,0,0,0
+NK cells,2_5_12,0,0,0,0,0,NA,0,NA,0,0,0,0,0,1,0,0,0,0
+CD8+ T cells,3_6_13,0,0,0,0,0,NA,0,NA,0,0,0,0,0,0,1,0,NA,0
+CD4+ T cells,3_6_14,0,0,0,0,0,NA,0,NA,0,0,0,0,0,0,0,1,NA,NA
+CD4+ T cells CD45RO+,4_14_15,0,0,0,0,0,NA,0,NA,0,0,0,0,0,0,0,NA,1,0
+Tregs,4_14_16,0,0,0,0,0,NA,0,NA,0,0,0,0,0,0,0,NA,0,1
