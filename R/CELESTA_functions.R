@@ -112,9 +112,9 @@ Celesta <- setClass("Celesta",
 #' @param project_title *required* name of the project (used in file names)
 #' @param prior_marker_info *required* user-defined cell-type signature matrix.
 #'
-#' The data should contain two columns (name X and Y) for the x, y coordinates 
-#' and a column for each protein marker. Each row represents the data for a 
-#' single cell, including its x, y coordinates and expression for each protein 
+#' The data should contain two columns (name X and Y) for the x, y coordinates
+#' and a column for each protein marker. Each row represents the data for a
+#' single cell, including its x, y coordinates and expression for each protein
 #' marker.
 #'
 #' @param imaging_data_file *required* segmented imaging data.
@@ -250,7 +250,9 @@ FilterCells <- function(celesta_obj,
 #' @param cell_change_threshold user defined threshold on when the iterative
 #' cell-type assignment stops. The default value is 0.01, which means that if
 #' the percentage of additional assigned cells is smaller than 1% of the
-#' unassigned cells, then cell-type assignment will stop.
+#' unassigned cells, then cell-type assignment will stop. The recommended range
+#' is 0.01 - 0.05. Note that the higher the cell change threshold, the more
+#' cells are left unassigned.
 #' @param min_diff user defined threshold on how much the largest cell-type
 #' probability needs to be higher than the second largest cell-type probability.
 #' The default value is 0. It is recommended to not change this value.
@@ -258,12 +260,14 @@ FilterCells <- function(celesta_obj,
 #' (i.e. a cell-type probability needs to be higher than this threshold for a
 #' cell to be assigned to that cell type). The default value is 0. It is
 #' recommended to not set this value higher than 0.5.
-#' @param high_marker_threshold_anchor the upper threshold for each cell type
-#' @param low_marker_threshold_anchor the lower threshold for each cell type
-#' @param high_marker_threshold_iteration user defined marker expression
+#' @param high_expression_threshold_anchor the upper threshold for each cell type
+#' @param low_expression_threshold_anchor the lower threshold for each cell type
+#' @param high_expression_threshold_index user defined marker expression
 #' probability threshold for high expression for non-anchor cells
-#' @param low_marker_threshold_iteration user defined marker expression
+#' @param low_expression_threshold_index user defined marker expression
 #' probability threshold for low expression for non-anchor cells
+#' @param progress progress object used for the Shiny app. Do not specify
+#' manually.
 #' @return a fully initialized Celesta object
 #' @export
 AssignCells <- function(celesta_obj,
@@ -271,11 +275,21 @@ AssignCells <- function(celesta_obj,
                         cell_change_threshold = 0.01,
                         min_diff = 0,
                         min_probability = 0,
-                        high_marker_threshold_anchor = rep(0.7, length = 50),
-                        low_marker_threshold_anchor = rep(0.9, length = 50),
-                        high_marker_threshold_iteration = rep(0.5, length = 50),
-                        low_marker_threshold_iteration = rep(1, length = 50)) {
-  # Cell type assignment should normally finish within 10 minutes for ~100k 
+                        high_expression_threshold_anchor = rep(0.7,
+                          length = 50
+                        ),
+                        low_expression_threshold_anchor = rep(0.9,
+                          length = 50
+                        ),
+                        high_expression_threshold_index = rep(0.5,
+                          length = 50
+                        ),
+                        low_expression_threshold_index = rep(1,
+                          length = 50
+                        ),
+                        progress = NULL,
+                        save_result = T) {
+  # Cell type assignment should normally finish within 10 minutes for ~100k
   # cells and runs pretty fast for <50k cells
   for (round in 1:celesta_obj@total_rounds) {
     celesta_obj@current_cell_type_assignment[, round] <-
@@ -326,8 +340,8 @@ AssignCells <- function(celesta_obj,
       cell_type_num,
       unassigned_cells,
       round,
-      high_marker_threshold = high_marker_threshold_anchor,
-      low_marker_threshold = low_marker_threshold_anchor,
+      high_marker_threshold = high_expression_threshold_anchor,
+      low_marker_threshold = low_expression_threshold_anchor,
       min_difference = min_diff,
       min_prob = min_probability
     )
@@ -417,8 +431,8 @@ AssignCells <- function(celesta_obj,
         cell_type_num,
         unassigned_cells,
         round,
-        high_marker_threshold = high_marker_threshold_iteration,
-        low_marker_threshold = low_marker_threshold_iteration,
+        high_marker_threshold = high_expression_threshold_index,
+        low_marker_threshold = low_expression_threshold_index,
         min_difference = min_diff,
         min_prob = min_probability
       )
@@ -499,6 +513,23 @@ AssignCells <- function(celesta_obj,
         cell_type_num
       )
     }
+
+    if (!is.null(progress)) {
+      currValue <- progress$getValue()
+      value <- 100 / celesta_obj@total_rounds
+      detail <- ifelse(round == celesta_obj@total_rounds, "Assignment complete",
+        paste0(
+          "Round ",
+          round + 1,
+          "/",
+          celesta_obj@total_rounds
+        )
+      )
+      progress$set(
+        value = currValue + value,
+        detail = detail
+      )
+    }
   }
   celesta_obj@final_cell_type_assignment <- GetFinalInferredCellTypes(
     celesta_obj@project_name,
@@ -507,17 +538,23 @@ AssignCells <- function(celesta_obj,
     celesta_obj@anchor_cell_type_assignment,
     celesta_obj@prior_info,
     celesta_obj@lineage_info,
-    imaging_data
+    celesta_obj@coords, 
+    celesta_obj@original_exp,
+    save_result = save_result
   )
+
+  if (dim(celesta_obj@final_cell_type_assignment)[2] == 0) {
+    print("No cells were assigned. Please adjust the CELESTA paramters.")
+  }
   return(celesta_obj)
 }
 ################################################################################
 ################################################################################
 #' PlotCellsAnyCombination
-#' 
+#'
 #' @description Plots the cells using x, y coordinates with their assigned cell
 #' types
-#' 
+#'
 #' @param cell_type_assignment_to_plot the final cell type assignment for each
 #' cell
 #' @param coords the x, y coordinates of each cell
@@ -527,7 +564,7 @@ AssignCells <- function(celesta_obj,
 #' and a column for each protein marker. Each row represents the data for a
 #' single cell, including its x, y coordinates and expression for each protein
 #' marker.
-#' 
+#'
 #' @param cell_number_to_use the row number of the cell types to plot from
 #' `prior_info`
 #' @param cell_type_colors the colors for the cell types
@@ -551,7 +588,7 @@ PlotCellsAnyCombination <- function(cell_type_assignment_to_plot,
                                     save_plot = TRUE,
                                     output_dir = ".") {
   # Cannot plot more than 7 cell types
-  cell_types <- prior_info[cell_number_to_use, 1]
+  cell_types <- c("Unknown", prior_info[cell_number_to_use, 1])
   x_min <- min(coords[, 1])
   x_max <- max(coords[, 1])
   y_min <- min(coords[, 2])
@@ -612,11 +649,18 @@ PlotCellsAnyCombination <- function(cell_type_assignment_to_plot,
 ################################################################################
 ################################################################################
 #' PlotExpProb
-#' 
+#'
 #' @description Plots the expression probabilities of cells in the tissue
-#' 
-#' @param celesta_obj an fully initialized Celesta object (provided by
-#' `AssignCells`)
+#'
+#' @param coords the x, y coordinates of each cell
+#' @param marker_exp_prob the marker expression probability for each cell
+#' @param prior_marker_info user-defined cell-type signature matrix.
+#'
+#' The data should contain two columns (name X and Y) for the x, y coordinates
+#' and a column for each protein marker. Each row represents the data for a
+#' single cell, including its x, y coordinates and expression for each protein
+#' marker.
+#'
 #' @param size_to_use the size of the points in the plot
 #' @param width_to_use the width of the plot
 #' @param height_to_use the height of the plot
@@ -626,15 +670,14 @@ PlotCellsAnyCombination <- function(cell_type_assignment_to_plot,
 #' Note that the directory must exist.
 #' @return writes a plot of the expression probabilities for each marker
 #' @export
-PlotExpProb <- function(celesta_obj,
+PlotExpProb <- function(coords,
+                        marker_exp_prob,
+                        prior_marker_info,
                         size_to_use = 1,
                         width_to_use = 5,
                         height_to_use = 4,
                         save_plot = TRUE,
                         output_dir = ".") {
-  coords <- celesta_obj@coords
-  marker_exp_prob <- celesta_obj@marker_exp_prob
-  prior_marker_info <- celesta_obj@prior_info
   palette <- colorRampPalette(colors = c("white", "blue4"))
   cols <- palette(6)
 
@@ -642,69 +685,17 @@ PlotExpProb <- function(celesta_obj,
     colnames(prior_marker_info)[3:dim(prior_marker_info)[2]]
   )
   for (i in 1:length(markers_to_check)) {
-    marker_to_use <- markers_to_check[i]
-    marker_exp_prob_to_use <- marker_exp_prob[, which(
-      colnames(marker_exp_prob) == marker_to_use
-    )]
-    cols_anno <- character(length = length(marker_exp_prob_to_use))
-    cols_anno[which(marker_exp_prob_to_use > 0.9)] <- ">0.9"
-    cols_anno[which(marker_exp_prob_to_use > 0.8 &
-      marker_exp_prob_to_use <= 0.9)] <- ">0.8"
-    cols_anno[which(marker_exp_prob_to_use > 0.7 &
-      marker_exp_prob_to_use <= 0.8)] <- ">0.7"
-    cols_anno[which(marker_exp_prob_to_use > 0.5 &
-      marker_exp_prob_to_use <= 0.7)] <- ">0.5"
-    cols_anno[which(marker_exp_prob_to_use <= 0.5)] <- "<=0.5"
-
-    mca <- data.frame(
-      Coords_1 = round(coords[, 1], digits = 2),
-      Coords_2 = round(coords[, 2], digits = 2),
-      Exp_quantile = round(marker_exp_prob_to_use, digits = 2),
-      Col_anno = cols_anno
+    g <- PlotSingleExpProb(
+      coords,
+      marker_exp_prob,
+      cols,
+      markers_to_check[i],
+      size_to_use,
+      width_to_use,
+      height_to_use,
+      save_plot,
+      output_dir
     )
-    row.names(mca) <- NULL
-    colnames(mca) <- c("X", "Y", "Expression", "Color_anno")
-    mca$Color_anno <- factor(mca$Color_anno,
-      levels = c("<=0.5", ">0.5", ">0.7", ">0.8", ">0.9")
-    )
-
-    x_min <- min(coords[, 1])
-    x_max <- max(coords[, 1])
-    y_min <- min(coords[, 2])
-    y_max <- max(coords[, 2])
-    range <- c(min(x_min, y_min), max(x_max, y_max))
-
-    filename <- paste0(marker_to_use, "_exp_prob.png")
-    g <- ggplot(mca, aes(x = X, y = Y, color = Color_anno)) +
-      xlim(range[1], range[2]) +
-      ylim(range[1], range[2]) +
-      geom_point(shape = 20, size = size_to_use) +
-      ggtitle(marker_to_use) +
-      theme_bw() +
-      scale_colour_manual(values = c(
-        cols[1], cols[2], cols[3], cols[4],
-        cols[6]
-      )) +
-      theme(
-        legend.title = element_blank(),
-        legend.text = element_text(size = 14),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        plot.title = element_text(hjust = 0.5, size = 15, face = "bold")
-      ) +
-      guides(colour = guide_legend(override.aes = list(size = 10)))
-
-    if (save_plot) {
-      ggsave(
-        path = output_dir,
-        filename,
-        plot = g,
-        width = width_to_use,
-        height = height_to_use,
-        units = "in",
-        dpi = 300
-      )
-    }
   }
   return(g)
 }
@@ -713,6 +704,105 @@ PlotExpProb <- function(celesta_obj,
 #
 # PRIVATE FUNCTIONS
 #
+################################################################################
+################################################################################
+#' PlotSingleExpProb
+#'
+#' @description Plots the expression probabilities of cells in the tissue. This
+#' is use soley for the Shiny app.
+#'
+#' @param coords the x, y coordinates of each cell
+#' @param marker_exp_prob the marker expression probability for each cell
+#' @param cols the color palette for the plot
+#' @param marker_to_use marker to plot
+#' @param size_to_use the size of the points in the plot
+#' @param width_to_use the width of the plot
+#' @param height_to_use the height of the plot
+#' @param save_plot whether to save the plot
+#' @param output_dir the path to the directory to where the plot will be
+#' outputted. This defaults to the directory containing CELESTA_functions.R.
+#' Note that the directory must exist.
+#' @return generates a plot of the expression probabilities for a specified
+#' marker
+#' @export
+PlotSingleExpProb <- function(coords,
+                              marker_exp_prob,
+                              cols = NULL,
+                              marker_to_use,
+                              size_to_use = 1,
+                              width_to_use = 5,
+                              height_to_use = 4,
+                              save_plot = TRUE,
+                              output_dir = ".") {
+  if (is.null(cols)) {
+    palette <- colorRampPalette(colors = c("white", "blue4"))
+    cols <- palette(6)
+  }
+
+  marker_exp_prob_to_use <- marker_exp_prob[, which(
+    colnames(marker_exp_prob) == marker_to_use
+  )]
+  cols_anno <- character(length = length(marker_exp_prob_to_use))
+  cols_anno[which(marker_exp_prob_to_use > 0.9)] <- ">0.9"
+  cols_anno[which(marker_exp_prob_to_use > 0.8 &
+    marker_exp_prob_to_use <= 0.9)] <- ">0.8"
+  cols_anno[which(marker_exp_prob_to_use > 0.7 &
+    marker_exp_prob_to_use <= 0.8)] <- ">0.7"
+  cols_anno[which(marker_exp_prob_to_use > 0.5 &
+    marker_exp_prob_to_use <= 0.7)] <- ">0.5"
+  cols_anno[which(marker_exp_prob_to_use <= 0.5)] <- "<=0.5"
+
+  mca <- data.frame(
+    Coords_1 = round(coords[, 1], digits = 2),
+    Coords_2 = round(coords[, 2], digits = 2),
+    Exp_quantile = round(marker_exp_prob_to_use, digits = 2),
+    Col_anno = cols_anno
+  )
+  row.names(mca) <- NULL
+  colnames(mca) <- c("X", "Y", "Expression", "Color_anno")
+  mca$Color_anno <- factor(mca$Color_anno,
+    levels = c("<=0.5", ">0.5", ">0.7", ">0.8", ">0.9")
+  )
+
+  x_min <- min(coords[, 1])
+  x_max <- max(coords[, 1])
+  y_min <- min(coords[, 2])
+  y_max <- max(coords[, 2])
+  range <- c(min(x_min, y_min), max(x_max, y_max))
+
+  filename <- paste0(marker_to_use, "_exp_prob.png")
+  g <- ggplot(mca, aes(x = X, y = Y, color = Color_anno)) +
+    xlim(range[1], range[2]) +
+    ylim(range[1], range[2]) +
+    geom_point(shape = 20, size = size_to_use) +
+    ggtitle(marker_to_use) +
+    theme_bw() +
+    scale_colour_manual(values = c(
+      cols[1], cols[2], cols[3], cols[4],
+      cols[6]
+    )) +
+    theme(
+      legend.title = element_blank(),
+      legend.text = element_text(size = 14),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      plot.title = element_text(hjust = 0.5, size = 15, face = "bold")
+    ) +
+    guides(colour = guide_legend(override.aes = list(size = 10)))
+
+  if (save_plot) {
+    ggsave(
+      path = output_dir,
+      filename,
+      plot = g,
+      width = width_to_use,
+      height = height_to_use,
+      units = "in",
+      dpi = 300
+    )
+  }
+  return(g)
+}
 ################################################################################
 ################################################################################
 #' GetMarkerExpMatrix
@@ -1135,7 +1225,7 @@ GetNeighborInfo <- function(coords, number_of_neighbors = 5, bandwidth = 100) {
 #' segmentation protein marker expression if transformation is not specified)
 #' @param prior_info user-defined cell-type signature matrix.
 #'
-#' The data should contain two columns (name X and Y) for the x, y coordinates 
+#' The data should contain two columns (name X and Y) for the x, y coordinates
 #' and a column for each protein marker. Each row represents the data for a
 #' single cell, including its x, y coordinates and expression for each protein
 #' marker.
@@ -1187,7 +1277,7 @@ InitializeCellAndScoringMatrices <- function(lineage_info,
 #' @param marker_exp_matrix transformed protein marker expression (or original
 #' segmentation protein marker expression if transformation is not specified)
 #' @param marker_exp_prob the marker expression probability for each cell
-#' @param current_cell_type_assignment the cell type assignments for each round 
+#' @param current_cell_type_assignment the cell type assignments for each round
 #' for each cell
 #' @param high_marker_threshold upper bound used to filter out questionable
 #' cells
@@ -1267,7 +1357,7 @@ GetInitialPriorMatrix <- function(lineage_info, prior_marker_info, round) {
 ################################################################################
 ################################################################################
 #' FindCellsToCheck
-#' 
+#'
 #' @description Find unassigned cells
 #'
 #' @param current_cell_type_assignment the current cell type assignments
@@ -1304,7 +1394,7 @@ FindCellsToCheck <- function(current_cell_type_assignment,
 ################################################################################
 ################################################################################
 #' FindCellsWithId
-#' 
+#'
 #' @description Find cells assigned with a cell type
 #'
 #' @param current_cell_type_assignment the current cell type assignments
@@ -1336,9 +1426,9 @@ FindCellsWithId <- function(current_cell_type_assignment,
 ################################################################################
 ################################################################################
 #' GetScore
-#' 
+#'
 #' @description Calculate scores using MSE
-#' 
+#'
 #' @param activation_prob_to_use the marker expression probabilities of the
 #' unassigned cells
 #' @param prior_info user-defined cell-type signature matrix.
@@ -1347,7 +1437,7 @@ FindCellsWithId <- function(current_cell_type_assignment,
 #' and a column for each protein marker. Each row represents the data for a
 #' single cell, including its x, y coordinates and expression for each protein
 #' marker.
-#' 
+#'
 #' @param non_NA_index the index of the columns in `current_pri_matrix` that do
 #' not contain NA for a particular cell
 #' @return the score of the cell
@@ -1362,7 +1452,7 @@ GetScore <- function(activation_prob_to_use, prior_info, non_NA_index) {
 ################################################################################
 ################################################################################
 #' CalculateScores
-#' 
+#'
 #' @description Calculate the scores based on the scoring function
 #'
 #' @param marker_exp_prob the marker expression probability for each cell
@@ -1403,7 +1493,7 @@ CalculateScores <- function(marker_exp_prob,
 ################################################################################
 ################################################################################
 #' CalculateProbabilityDifference
-#' 
+#'
 #' @description Calculate the probability differences
 #'
 #' @param max.prob the maximum marker probability for each cell
@@ -1434,10 +1524,10 @@ CalculateProbabilityDifference <- function(max.prob,
 ################################################################################
 ################################################################################
 #' AssignCellTypes
-#' 
+#'
 #' @description Find the cell types based on the scores (anchor cell) or
 #' probabilities (index cell)
-#' 
+#'
 #' @param initial_pri_matrix user defined cell-type marker matrix for a
 #' specific round
 #' @param current_cell_prob the current cell probability
@@ -1453,7 +1543,7 @@ CalculateProbabilityDifference <- function(max.prob,
 #' @param low_marker_threshold the lower threshold for each cell type
 #' @param min_difference lower bound used to determine cells that meet the
 #' threshold
-#' @param min_prob lower bound used to determine cells that meet the threshold 
+#' @param min_prob lower bound used to determine cells that meet the threshold
 #' @return an updated current cell type assignment (number_cells x total_rounds)
 #' with more cells assigned for the current round
 #' @export
@@ -1516,7 +1606,7 @@ AssignCellTypes <- function(initial_pri_matrix,
 ################################################################################
 ################################################################################
 #' CountCellType
-#' 
+#'
 #' @description Counts the cell type
 #'
 #' @param prior_info user-defined cell-type signature matrix.
@@ -1525,13 +1615,13 @@ AssignCellTypes <- function(initial_pri_matrix,
 #' and a column for each protein marker. Each row represents the data for a
 #' single cell, including its x, y coordinates and expression for each protein
 #' marker.
-#' 
+#'
 #' @param current_cell_type_assignment the current cell type assignments
 #' (number_cells x total_rounds)
 #' @param cell_type_num the cell types associated with the current round
 #' @param round the current round
 #' @return the count and proportion for each cell type based on the current cell
-#' type assignments  
+#' type assignments
 #' @export
 CountCellType <- function(prior_info,
                           current_cell_type_assignment,
@@ -1560,7 +1650,7 @@ CountCellType <- function(prior_info,
 ################################################################################
 ################################################################################
 #' NeighborCellType
-#' 
+#'
 #' @description Find the cell types of the neighbors of unassigned cells
 #'
 #' @param nb_list the list of N-nearest neighbors
@@ -1600,7 +1690,7 @@ NeighborCellType <- function(nb_list,
 ################################################################################
 ################################################################################
 #' GetDistFromNearestAssignedCells
-#' 
+#'
 #' @description Get distance from nearest assigned cells
 #'
 #' @param cell_nb_in_bandwidth the cells located within a bandwidth to cell *c*
@@ -1655,9 +1745,9 @@ GetDistFromNearestAssignedCells <- function(cell_nb_in_bandwidth,
 ################################################################################
 ################################################################################
 #' CalculateBeta
-#' 
+#'
 #' @description Calculates beta
-#' 
+#'
 #' @param dist_from_nearest_assigned_cell the distance from the nearest assigned
 #' cell
 #' @param scale_factor the scale factor
@@ -1675,7 +1765,7 @@ CalculateBeta <- function(dist_from_nearest_assigned_cell,
 ################################################################################
 ################################################################################
 #' CalculateIndexCellProb
-#' 
+#'
 #' @description Calculates the probability for index cells
 #'
 #' @param current_cell_prob the current cell probability
@@ -1731,7 +1821,7 @@ CalculateIndexCellProb <- function(current_cell_prob,
 ################################################################################
 ################################################################################
 #' UpdatePriorMatrix
-#' 
+#'
 #' @description Updates prior knowledge matrix of the cell type signatures
 #'
 #' @param current_pri_matrix the updated cell-type marker matrix
@@ -1742,7 +1832,7 @@ CalculateIndexCellProb <- function(current_cell_prob,
 #' @param marker_exp_prob the marker expression probability for each cell
 #' @param round the current round
 #' @param cell_type_num the cell types associated with the current round
-#' @return updates the prior knowledge matrix with information from cells 
+#' @return updates the prior knowledge matrix with information from cells
 #' assigned to each cell type
 #' @export
 UpdatePriorMatrix <- function(current_pri_matrix,
@@ -1770,7 +1860,7 @@ UpdatePriorMatrix <- function(current_pri_matrix,
 ################################################################################
 ################################################################################
 #' GetFinalInferredCellTypes
-#' 
+#'
 #' @description Get final cell types and writes two files: the final cell type
 #' assignments and the anchor cell type assignments.
 #'
@@ -1784,33 +1874,14 @@ UpdatePriorMatrix <- function(current_pri_matrix,
 #' and a column for each protein marker. Each row represents the data for a
 #' single cell, including its x, y coordinates and expression for each protein
 #' marker.
-#' 
+#'
 #' @param lineage_info the lineage information from `prior_info` parsed into
 #' round, previous cell type, and cell type number columns
-#' @param imaging_data segmented imaging data.
-#' The first column must contain the cell types to be inferred. The second
-#' column must contain the lineage information with the following format
-#' (without spaces): # _ # _ #.
-#'
-#' * The first number indicates round. Cell types with the same lineage level
-#' are inferred at the same round. An higher number indicates higher cell-type
-#' resolution. For example, immune cells -> CD3+ T cells -> CD4+ T cells.
-#'
-#' * The second number indicates the previous lineage cell type number for the
-#' current cell type. For example, the second number for CD3+ T cell is 5
-#' because it is avsubtype of immune cells which have cell type number 5.
-#'
-#' * The third number is a number assigned to the cell type
-#' (i.e. cell type number).
-#'
-#' The third column and beyond are columns for protein markers.
-#'
-#' * If a protein marker is known to be expressed for that cell type, then it
-#' is denoted by a "1".
-#' * If a protein marker is known to not express for a cell type, then it is
-#' denoted by a "0".
-#' * If the protein marker is irrelevant or uncertain to express for a cell
-#' type, then it is denoted by "NA".
+#' @param coords the x, y coordinates of each cell
+#' @param original_exp original protein marker expression (containing only the
+#' protein markers specified in `prior_info`)
+#' @param save_data whether or not to save the final cell type assignment
+#' and anchor cell assignment results
 #' @return the final cell type assignments
 #' @export
 #' @md
@@ -1820,7 +1891,9 @@ GetFinalInferredCellTypes <- function(project_name,
                                       anchor_cell_type_assignment,
                                       prior_info,
                                       lineage_info,
-                                      imaging_data) {
+                                      coords,
+                                      original_exp,# TODO: coords & original exp matrix
+                                      save_result = T) {
   cell_type_name_assigned <- matrix(
     nrow = dim(current_cell_type_assignment),
     ncol = total_rounds
@@ -1880,13 +1953,14 @@ GetFinalInferredCellTypes <- function(project_name,
   )
   round_name <- paste("Round", seq(1, total_rounds, by = 1))
   colnames(final_result) <- c(round_name, "Cell type number", "Final cell type")
-  filename <- paste0(project_name, "_final_cell_type_assignment.csv")
-  write.csv(cbind(final_result, imaging_data),
-    file = filename,
-    row.names = FALSE
-  )
-  filename <- paste0(project_name, "_anchor_cell_assignment.csv")
-  write.csv(anchor_cell_type_name_assigned, file = filename)
+
+  if (save_result) {
+    filename <- paste0(project_name, "_final_cell_type_assignment.csv")
+    write.csv(cbind(final_result, coords, original_exp),
+      file = filename,
+      row.names = FALSE
+    )
+  }
   return(final_result)
 }
 ################################################################################

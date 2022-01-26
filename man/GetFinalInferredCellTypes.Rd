@@ -11,7 +11,9 @@ GetFinalInferredCellTypes(
   anchor_cell_type_assignment,
   prior_info,
   lineage_info,
-  imaging_data
+  coords,
+  original_exp,
+  save_result = T
 )
 }
 \arguments{
@@ -32,30 +34,13 @@ marker.}
 \item{lineage_info}{the lineage information from \code{prior_info} parsed into
 round, previous cell type, and cell type number columns}
 
-\item{imaging_data}{segmented imaging data.
-The first column must contain the cell types to be inferred. The second
-column must contain the lineage information with the following format
-(without spaces): # _ # _ #.
-\itemize{
-\item The first number indicates round. Cell types with the same lineage level
-are inferred at the same round. An higher number indicates higher cell-type
-resolution. For example, immune cells -> CD3+ T cells -> CD4+ T cells.
-\item The second number indicates the previous lineage cell type number for the
-current cell type. For example, the second number for CD3+ T cell is 5
-because it is avsubtype of immune cells which have cell type number 5.
-\item The third number is a number assigned to the cell type
-(i.e. cell type number).
-}
+\item{coords}{the x, y coordinates of each cell}
 
-The third column and beyond are columns for protein markers.
-\itemize{
-\item If a protein marker is known to be expressed for that cell type, then it
-is denoted by a "1".
-\item If a protein marker is known to not express for a cell type, then it is
-denoted by a "0".
-\item If the protein marker is irrelevant or uncertain to express for a cell
-type, then it is denoted by "NA".
-}}
+\item{original_exp}{original protein marker expression (containing only the
+protein markers specified in \code{prior_info})}
+
+\item{save_data}{whether or not to save the final cell type assignment
+and anchor cell assignment results}
 }
 \value{
 the final cell type assignments

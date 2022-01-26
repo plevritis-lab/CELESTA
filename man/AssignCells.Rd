@@ -10,10 +10,12 @@ AssignCells(
   cell_change_threshold = 0.01,
   min_diff = 0,
   min_probability = 0,
-  high_marker_threshold_anchor = rep(0.7, length = 50),
-  low_marker_threshold_anchor = rep(0.9, length = 50),
-  high_marker_threshold_iteration = rep(0.5, length = 50),
-  low_marker_threshold_iteration = rep(1, length = 50)
+  high_expression_threshold_anchor = rep(0.7, length = 50),
+  low_expression_threshold_anchor = rep(0.9, length = 50),
+  high_expression_threshold_index = rep(0.5, length = 50),
+  low_expression_threshold_index = rep(1, length = 50),
+  progress = NULL,
+  save_result = T
 )
 }
 \arguments{
@@ -25,7 +27,9 @@ AssignCells(
 \item{cell_change_threshold}{user defined threshold on when the iterative
 cell-type assignment stops. The default value is 0.01, which means that if
 the percentage of additional assigned cells is smaller than 1\% of the
-unassigned cells, then cell-type assignment will stop.}
+unassigned cells, then cell-type assignment will stop. The recommended range
+is 0.01 - 0.05. Note that the higher the cell change threshold, the more
+cells are left unassigned.}
 
 \item{min_diff}{user defined threshold on how much the largest cell-type
 probability needs to be higher than the second largest cell-type probability.
@@ -36,15 +40,18 @@ The default value is 0. It is recommended to not change this value.}
 cell to be assigned to that cell type). The default value is 0. It is
 recommended to not set this value higher than 0.5.}
 
-\item{high_marker_threshold_anchor}{the upper threshold for each cell type}
+\item{high_expression_threshold_anchor}{the upper threshold for each cell type}
 
-\item{low_marker_threshold_anchor}{the lower threshold for each cell type}
+\item{low_expression_threshold_anchor}{the lower threshold for each cell type}
 
-\item{high_marker_threshold_iteration}{user defined marker expression
+\item{high_expression_threshold_index}{user defined marker expression
 probability threshold for high expression for non-anchor cells}
 
-\item{low_marker_threshold_iteration}{user defined marker expression
+\item{low_expression_threshold_index}{user defined marker expression
 probability threshold for low expression for non-anchor cells}
+
+\item{progress}{progress object used for the Shiny app. Do not specify
+manually.}
 }
 \value{
 a fully initialized Celesta object

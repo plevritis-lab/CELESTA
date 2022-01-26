@@ -39,16 +39,35 @@ compareCelesta <- function(actual, expected) {
 }
 
 test_that("CreateCelestaObject", {
-  actual <- CELESTA::CreateCelestaObject(project_title = "project_title", prior_marker_info, imaging_data)
-  expected <- CreateCELESTAobj(project_title = "project_title", prior_marker_info, imaging_data)
+  actual <- CELESTA::CreateCelestaObject(
+    project_title = "project_title",
+    prior_marker_info,
+    imaging_data
+  )
+  expected <- CreateCELESTAobj(
+    project_title = "project_title",
+    prior_marker_info,
+    imaging_data
+  )
   compareCelesta(actual, expected)
 })
 
 test_that("FilterCells", {
-  celesta_obj <- CELESTA::CreateCelestaObject(project_title = "project_title", prior_marker_info, imaging_data)
-  CelestaObj <- CreateCELESTAobj(project_title = "project_title", prior_marker_info, imaging_data)
+  celesta_obj <- CELESTA::CreateCelestaObject(
+    project_title = "project_title",
+    prior_marker_info,
+    imaging_data
+  )
+  CelestaObj <- CreateCELESTAobj(
+    project_title = "project_title",
+    prior_marker_info,
+    imaging_data
+  )
 
-  actual <- CELESTA::FilterCells(celesta_obj, high_marker_threshold = 0.9, low_marker_threshold = 0.5)
+  actual <- CELESTA::FilterCells(celesta_obj,
+    high_marker_threshold = 0.9,
+    low_marker_threshold = 0.5
+  )
   expected <- cell_filtering(
     high_marker_threshold = 0.9, low_marker_threshold = 0.5,
     CelestaObj
@@ -57,10 +76,21 @@ test_that("FilterCells", {
 })
 
 test_that("AssignCells", {
-  celesta_obj <- CELESTA::CreateCelestaObject(project_title = "project_title", prior_marker_info, imaging_data)
-  CelestaObj <- CreateCELESTAobj(project_title = "project_title", prior_marker_info, imaging_data)
+  celesta_obj <- CELESTA::CreateCelestaObject(
+    project_title = "project_title",
+    prior_marker_info,
+    imaging_data
+  )
+  CelestaObj <- CreateCELESTAobj(
+    project_title = "project_title",
+    prior_marker_info,
+    imaging_data
+  )
 
-  celesta_obj <- CELESTA::FilterCells(celesta_obj, high_marker_threshold = 0.9, low_marker_threshold = 0.5)
+  celesta_obj <- CELESTA::FilterCells(celesta_obj,
+    high_marker_threshold = 0.9,
+    low_marker_threshold = 0.5
+  )
   CelestaObj <- cell_filtering(
     high_marker_threshold = 0.9, low_marker_threshold = 0.5,
     CelestaObj
@@ -68,10 +98,10 @@ test_that("AssignCells", {
 
   actual <- CELESTA::AssignCells(celesta_obj,
     max_iteration = 10, cell_change_threshold = 0.01,
-    high_marker_threshold_anchor = high_marker_threshold_anchor,
-    low_marker_threshold_anchor = low_marker_threshold_anchor,
-    high_marker_threshold_iteration = high_marker_threshold_iteration,
-    low_marker_threshold_iteration = low_marker_threshold_iteration
+    high_expression_threshold_anchor = high_marker_threshold_anchor,
+    low_expression_threshold_anchor = low_marker_threshold_anchor,
+    high_expression_threshold_index = high_marker_threshold_iteration,
+    low_expression_threshold_index = low_marker_threshold_iteration
   )
   expected <- assign_cell_main(CelestaObj,
     max_iteration = 10, cell_change_threshold = 0.01,
