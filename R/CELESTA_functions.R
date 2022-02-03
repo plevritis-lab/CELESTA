@@ -1016,13 +1016,25 @@ FitGmmModel <- function(marker_exp, marker_name, figure = FALSE) {
         free.proportions = FALSE, equal.proportions = TRUE
       )
     )
-  } else if (zero_percentage >= 0.5) {
+  } else if (zero_percentage >= 0.5 & zero_percentage <= 0.9) {
     print("Warning: The marker expression potentially has too many zeros for
           fitting. GMM fitting will use input expression data with reduced
           sparsity")
     num_of_indices_to_remove <- ceiling(length(marker_exp) * (zero_percentage -
       0.02))
     marker_exp <- marker_exp[-zero_indices[1:num_of_indices_to_remove]]
+    xxx <- mixmodCluster(marker_exp, 2,
+      models = mixmodGaussianModel(
+        family = "general",
+        listModels = "Gaussian_p_Lk_Ck",
+        free.proportions = FALSE, equal.proportions = TRUE
+      )
+    )
+  } else if (zero_percentage >= 0.9) {
+    print("Warning: The marker expression potentially has too many zeros for 
+          fitting. GMM fitting will use input expression data with reduced 
+          sparsity")
+    marker_exp <- marker_exp[-zero_indices]
     xxx <- mixmodCluster(marker_exp, 2,
       models = mixmodGaussianModel(
         family = "general",
