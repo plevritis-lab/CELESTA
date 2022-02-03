@@ -1084,7 +1084,6 @@ FitGmmModel <- function(marker_exp, marker_name, figure = FALSE) {
     lines(xfit, yfit2, col = "red", lwd = 2)
     dev.off()
   }
-  print("diff")
   return(gmm_marker_param)
 }
 ################################################################################
