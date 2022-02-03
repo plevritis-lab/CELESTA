@@ -1031,8 +1031,9 @@ FitGmmModel <- function(marker_exp, marker_name, figure = FALSE) {
       )
     )
   } else if (zero_percentage >= 0.9) {
-    print("Warning: The marker expression potentially has too many zeros for fitting.
-          GMM fitting will use input expression data with reduced sparsity")
+    print("Warning: The marker expression potentially has too many zeros for 
+          fitting. GMM fitting will use input expression data with reduced 
+          sparsity")
     marker_exp <- marker_exp[-zero_indices]
     xxx <- mixmodCluster(marker_exp, 2,
       models = mixmodGaussianModel(
