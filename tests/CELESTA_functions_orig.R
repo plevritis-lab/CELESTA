@@ -132,11 +132,25 @@ GMM_fitting <- function(marker_exp,marker_name,figure=FALSE){
     GMM_marker_param[2,] <- xxx@results[[1]]@parameters@mean[,1]
     GMM_marker_param[3,1] <- xxx@results[[1]]@parameters@variance[[1]][,1]
     GMM_marker_param[3,2] <- xxx@results[[1]]@parameters@variance[[2]][,1]
-  }else if(zero_percentage>=0.5){
+  }else if(zero_percentage>=0.5 & zero_percentage<=0.9){
     print("Warning: The marker expression potentially has too many zeros for fitting.
           GMM fitting will use input expression data with reduced sparsity")
     num_of_indices_to_remove <- ceiling(length(marker_exp)*(zero_percentage-0.02))
     marker_exp <- marker_exp[-zero_indices[1:num_of_indices_to_remove]]
+    xxx <- mixmodCluster(marker_exp,2,
+                         models=mixmodGaussianModel(family="general",
+                                                    listModels = "Gaussian_p_Lk_Ck",
+                                                    free.proportions = FALSE,equal.proportions = TRUE))
+    ### Check the models information for the Gaussian models, which shows which parameters are constrained. 
+    ### Want equal proportions of the two Gaussians
+    GMM_marker_param[1,] <- xxx@results[[1]]@parameters@proportions
+    GMM_marker_param[2,] <- xxx@results[[1]]@parameters@mean[,1]
+    GMM_marker_param[3,1] <- xxx@results[[1]]@parameters@variance[[1]][,1]
+    GMM_marker_param[3,2] <- xxx@results[[1]]@parameters@variance[[2]][,1]
+  }else if(zero_percentage>=0.9){
+    print("Warning: The marker expression potentially has too many zeros for fitting.
+          GMM fitting will use input expression data with reduced sparsity")
+    marker_exp <- marker_exp[-zero_indices]
     xxx <- mixmodCluster(marker_exp,2,
                          models=mixmodGaussianModel(family="general",
                                                     listModels = "Gaussian_p_Lk_Ck",
