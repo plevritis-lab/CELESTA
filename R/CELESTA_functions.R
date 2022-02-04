@@ -604,7 +604,10 @@ PlotCellsAnyCombination <- function(cell_type_assignment_to_plot,
     )
     cell_index[(count + 1):(count + length(unassigned_cells))] <-
       unassigned_cells
-    cell_anno[(count + 1):(count + length(unassigned_cells))] <- cell_types[i]
+    cell_anno[(count + 1):(count + length(unassigned_cells))] <- ifelse(
+      cell_number_to_use[i] == 0, "unknown",
+      prior_info[cell_number_to_use[i], 1]
+    )
     count <- count + length(unassigned_cells)
   }
   df_plot <- data.frame(
@@ -612,7 +615,9 @@ PlotCellsAnyCombination <- function(cell_type_assignment_to_plot,
     y = coords[cell_index, 2],
     cell_anno = cell_anno
   )
-  df_plot$cell_anno <- factor(df_plot$cell_anno, levels = c(cell_types))
+  df_plot$cell_anno <- factor(df_plot$cell_anno,
+    levels = c(cell_types, "unknown")
+  )
   color_plot <- cell_type_colors[1:length(cell_number_to_use)]
 
   g <- ggplot(df_plot, aes(x = x, y = y, group = cell_anno)) +
