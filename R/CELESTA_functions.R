@@ -588,7 +588,7 @@ PlotCellsAnyCombination <- function(cell_type_assignment_to_plot,
                                     save_plot = TRUE,
                                     output_dir = ".") {
   # Cannot plot more than 7 cell types
-  cell_types <- c("Unknown", prior_info[cell_number_to_use, 1])
+  cell_types <- prior_info[cell_number_to_use, 1]
   x_min <- min(coords[, 1])
   x_max <- max(coords[, 1])
   y_min <- min(coords[, 2])
