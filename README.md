@@ -76,10 +76,10 @@ CelestaObj <- FilterCells(CelestaObj,high_marker_threshold=0.9, low_marker_thres
 ### Assign cell types. max_iteration is used to define the maximum iterations allowed in the EM algorithm per round. 
 ### cell_change_threshold is a user-defined ending condition for the EM algorithm, for example, 0.01 means that when fewer than 1 percent of the total number of cells do not change identity, the algorithm will stop.
 CelestaObj <- AssignCells(CelestaObj,max_iteration=10,cell_change_threshold=0.01,
-                          high_marker_threshold_anchor=high_marker_threshold_anchor,
-                          low_marker_threshold_anchor=low_marker_threshold_anchor,
-                          high_marker_threshold_iteration=high_marker_threshold_iteration,
-                          low_marker_threshold_iteration=low_marker_threshold_iteration)
+                          high_expression_threshold_anchor=high_marker_threshold_anchor,
+                          low_expression_threshold_anchor=low_marker_threshold_anchor,
+                          high_expression_threshold_index=high_marker_threshold_iteration,
+                          low_expression_threshold_index=low_marker_threshold_iteration)
 
 ### Plot cells with CELESTA assigned cell types
 ### It is suggested that do not plot over 7 cell types on the same image for better visualization and compatibility with ImageJ. 
@@ -90,7 +90,10 @@ PlotCellsAnyCombination(cell_type_assignment_to_plot=CelestaObj@final_cell_type_
                         cell_number_to_use=c(1,2,3),cell_type_colors=c("yellow","red","blue"))
 
 ### plot expression probability
-PlotExpProb(CelestaObj,save_plot = TRUE)
+PlotExpProb(coords=CelestaObj@coords,
+            marker_exp_prob=CelestaObj@marker_exp_prob,
+            prior_marker_info = prior_marker_info,
+            save_plot = TRUE)
 ```
 
 ## Inputs
