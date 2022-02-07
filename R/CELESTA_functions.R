@@ -566,7 +566,7 @@ AssignCells <- function(celesta_obj,
 #' marker.
 #'
 #' @param cell_number_to_use the row number of the cell types to plot from
-#' `prior_info`
+#' `prior_info`. To plot unknown cells, include 0 in the list.
 #' @param cell_type_colors the colors for the cell types. If unknown cells
 #' are plotted, the color of the unknown cells will be the last color listed.
 #' @param test_size the size of the points in the plot
