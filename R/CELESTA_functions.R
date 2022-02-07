@@ -1909,7 +1909,7 @@ GetFinalInferredCellTypes <- function(project_name,
                                       prior_info,
                                       lineage_info,
                                       coords,
-                                      original_exp,# TODO: coords & original exp matrix
+                                      original_exp
                                       save_result = T) {
   cell_type_name_assigned <- matrix(
     nrow = dim(current_cell_type_assignment),
