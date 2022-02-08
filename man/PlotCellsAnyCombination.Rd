@@ -29,9 +29,10 @@ single cell, including its x, y coordinates and expression for each protein
 marker.}
 
 \item{cell_number_to_use}{the row number of the cell types to plot from
-\code{prior_info}}
+\code{prior_info}. To plot unknown cells, include 0 in the list.}
 
-\item{cell_type_colors}{the colors for the cell types}
+\item{cell_type_colors}{the colors for the cell types. If unknown cells
+are plotted, the color of the unknown cells will be the last color listed.}
 
 \item{test_size}{the size of the points in the plot}
 

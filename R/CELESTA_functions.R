@@ -566,8 +566,9 @@ AssignCells <- function(celesta_obj,
 #' marker.
 #'
 #' @param cell_number_to_use the row number of the cell types to plot from
-#' `prior_info`
-#' @param cell_type_colors the colors for the cell types
+#' `prior_info`. To plot unknown cells, include 0 in the list.
+#' @param cell_type_colors the colors for the cell types. If unknown cells
+#' are plotted, the color of the unknown cells will be the last color listed.
 #' @param test_size the size of the points in the plot
 #' @param save_plot whether to save the plot
 #' @param output_dir the path to the directory to where the plot will be
@@ -604,7 +605,10 @@ PlotCellsAnyCombination <- function(cell_type_assignment_to_plot,
     )
     cell_index[(count + 1):(count + length(unassigned_cells))] <-
       unassigned_cells
-    cell_anno[(count + 1):(count + length(unassigned_cells))] <- cell_types[i]
+    cell_anno[(count + 1):(count + length(unassigned_cells))] <- ifelse(
+      cell_number_to_use[i] == 0, "unknown",
+      prior_info[cell_number_to_use[i], 1]
+    )
     count <- count + length(unassigned_cells)
   }
   df_plot <- data.frame(
@@ -612,7 +616,9 @@ PlotCellsAnyCombination <- function(cell_type_assignment_to_plot,
     y = coords[cell_index, 2],
     cell_anno = cell_anno
   )
-  df_plot$cell_anno <- factor(df_plot$cell_anno, levels = c(cell_types))
+  df_plot$cell_anno <- factor(df_plot$cell_anno,
+    levels = c(cell_types, "unknown")
+  )
   color_plot <- cell_type_colors[1:length(cell_number_to_use)]
 
   g <- ggplot(df_plot, aes(x = x, y = y, group = cell_anno)) +
