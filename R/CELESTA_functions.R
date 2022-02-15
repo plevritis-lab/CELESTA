@@ -149,6 +149,8 @@ Celesta <- setClass("Celesta",
 #' @param number_of_neighbors the number of cells in a single neighborhood
 #' @param bandwidth the upper distance bound used when calculating
 #' neighborhoods by distance
+#' @param progress progress object used for the Shiny app. Do not specify
+#' manually.
 #' @return an initialized Celesta object
 #' @export
 #' @md
@@ -158,9 +160,16 @@ CreateCelestaObject <- function(project_title,
                                 cofactor = 10,
                                 transform_type = 1,
                                 number_of_neighbors = 5,
-                                bandwidth = 100) {
+                                bandwidth = 100,
+                                progress = NULL) {
   celesta_obj <- Celesta(project_name = project_title)
   # Get protein marker expressions and cell IDs
+  if (!is.null(progress)) {
+    progress$set(
+      value = 0,
+      detail = "Geting protein marker expressions"
+    )
+  }
   c(cell_ids, original_exp, marker_exp_matrix) %<-% GetMarkerExpMatrix(
     prior_marker_info,
     imaging_data_file,
@@ -172,20 +181,44 @@ CreateCelestaObject <- function(project_title,
   celesta_obj@marker_exp_matrix <- marker_exp_matrix
 
   # Get user-defined prior knowledge matrix and cell lineage information
+  if (!is.null(progress)) {
+    progress$set(
+      value = 15,
+      detail = "Geting user-defined prior knowledge matrix"
+    )
+  }
   c(lineage_info, total_rounds) %<-% GetPriorInfo(prior_marker_info)
   celesta_obj@prior_info <- prior_marker_info
   celesta_obj@lineage_info <- lineage_info
   celesta_obj@total_rounds <- total_rounds
 
   # Get coordinates
+  if (!is.null(progress)) {
+    progress$set(
+      value = 30,
+      detail = "Geting coordinates"
+    )
+  }
   celesta_obj@coords <- GetCoords(imaging_data_file)
 
   # Convert marker expressions to marker activation probability
+  if (!is.null(progress)) {
+    progress$set(
+      value = 45,
+      detail = "Converting marker expressions to marker activation probability"
+    )
+  }
   celesta_obj@marker_exp_prob <- CalcMarkerActivationProbability(
     celesta_obj@marker_exp_matrix
   )
 
   # Get neighboring cell information
+  if (!is.null(progress)) {
+    progress$set(
+      value = 60,
+      detail = "Getting neighboring cell information"
+    )
+  }
   c(nb_list, all_cell_nb_in_bandwidth, cell_nb_dist) %<-% GetNeighborInfo(
     celesta_obj@coords,
     number_of_neighbors
@@ -195,7 +228,16 @@ CreateCelestaObject <- function(project_title,
   celesta_obj@cell_nb_dist <- cell_nb_dist
 
   # Initialize the matrices for scoring function and probability matrix
-  c(current_cell_type_assignment, current_scoring_matrix, current_cell_prob) %<-%
+  if (!is.null(progress)) {
+    progress$set(
+      value = 90,
+      detail = "Initializing cell and scoring matrices"
+    )
+  }
+  c(
+    current_cell_type_assignment, current_scoring_matrix,
+    current_cell_prob
+  ) %<-%
     InitializeCellAndScoringMatrices(
       celesta_obj@lineage_info,
       celesta_obj@marker_exp_matrix, celesta_obj@prior_info
@@ -788,6 +830,7 @@ PlotSingleExpProb <- function(coords,
       cols[6]
     )) +
     theme(
+      aspect.ratio = 1,
       legend.title = element_blank(),
       legend.text = element_text(size = 14),
       panel.grid.major = element_blank(),
