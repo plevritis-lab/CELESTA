@@ -11,7 +11,8 @@ CreateCelestaObject(
   cofactor = 10,
   transform_type = 1,
   number_of_neighbors = 5,
-  bandwidth = 100
+  bandwidth = 100,
+  progress = NULL
 )
 }
 \arguments{
@@ -59,6 +60,9 @@ expressions (0 = no transform, 1 = arcsinh transform)}
 
 \item{bandwidth}{the upper distance bound used when calculating
 neighborhoods by distance}
+
+\item{progress}{progress object used for the Shiny app. Do not specify
+manually.}
 }
 \value{
 an initialized Celesta object
