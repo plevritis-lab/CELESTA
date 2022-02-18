@@ -195,7 +195,7 @@ endothelial cells, if we plot the expression probabilities of CD31
 (left) and compare with the CD31 staining, approximately 0.9 and 0.8
 would be the right threshold for defining how much the cell should
 express CD31. `Please note:` It is suggested that for anchor cells, use
-a slightly higher threshold than index cells. ![An example of
+a slightly higher threshold than index cells.<br/> ![An example of
 CD31](images/CD31_threshold.png) Another example, for tumor cells, if we
 plot the expression probabilities of Cytokerain (left) and compare with
 the Cytokeratin staining, approximately 0.9 and 0.8 would be the right
@@ -208,9 +208,13 @@ The two vectors are required for defining the “low\_marker\_threshold”,
 one for anchor cells and one for index cells. The thresholds defined how
 much the marker expression probability is in order to be considered as
 not expressed. Normally 1 is assigned to this value unless there are a
-lot of doublets or co-staining in the data.An example for defining
-low\_marker\_threshold is shown below:<br/> ![An example of low marker
-threshold](images/low_threshold_example.png)
+lot of doublets or co-staining in the data. **The Low expression
+threshold default values in general are robust, and thus we recommend
+testing the High expression threshold values.**<br/>
+
+An example for defining low\_marker\_threshold is shown below:<br/>
+
+![An example of low marker threshold](images/low_threshold_example.png)
 
 ## Getting help
 
