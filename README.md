@@ -102,10 +102,13 @@ CelestaObj <- AssignCells(CelestaObj,max_iteration=10,cell_change_threshold=0.01
 ### The program will plot the corresponding cell types given in the "cell_number_to_use" parameter.
 ### To plot the "unknown" cells that are left unassigned by CELESTA, include 0 in the list.
 ### The default color for unknown cells is gray.
+### The size of the cells plotted can be modified by changing the parameter test_size.
 PlotCellsAnyCombination(cell_type_assignment_to_plot=CelestaObj@final_cell_type_assignment[,(CelestaObj@total_rounds+1)],
                         coords = CelestaObj@coords,
                         prior_info = prior_marker_info,
-                        cell_number_to_use=c(1,2,3),cell_type_colors=c("yellow","red","blue"))
+                        cell_number_to_use=c(1,2,3),
+                        cell_type_colors=c("yellow","red","blue"),
+                        test_size=1)
 
 ### To include unknown cells
 PlotCellsAnyCombination(cell_type_assignment_to_plot=CelestaObj@final_cell_type_assignment[,(CelestaObj@total_rounds+1)],
