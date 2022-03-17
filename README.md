@@ -96,7 +96,7 @@ CelestaObj <- AssignCells(CelestaObj,max_iteration=10,cell_change_threshold=0.01
 ### cell types and the corresponding cell type number corresponding to the cell type specified in 
 ### the cell-type signature matrix (please see Input section below).
 
-### Plotting function with CELESTA assigned cell types.
+### Plot cells with CELESTA assigned cell types.
 ### The cell_number_to_use corresponds to the defined numbers in the prior cell-type signature matrix.
 ### For example, 1 corresponds to endothelial cell, 2 corresponds to tumor cell.
 ### The program will plot the corresponding cell types given in the "cell_number_to_use" parameter.
@@ -104,13 +104,11 @@ CelestaObj <- AssignCells(CelestaObj,max_iteration=10,cell_change_threshold=0.01
 ### The default color for unknown cells is gray.
 PlotCellsAnyCombination(cell_type_assignment_to_plot=CelestaObj@final_cell_type_assignment[,(CelestaObj@total_rounds+1)],
                         coords = CelestaObj@coords,
-                        prior_info = prior_marker_info_CAF,
-                        cell_number_to_use=c(1,2,3,4),
-                        cell_type_colors=c("yellow","red","blue","green"),
-                        test_size = 0.2)
+                        prior_info = prior_marker_info,
+                        cell_number_to_use=c(1,2,3),cell_type_colors=c("yellow","red","blue"))
 
 ### To include unknown cells
-PlotCellsAnyCombination(cell_type_assignment_to_plot=CelestaObj@final_cell_type_assignment[,5],
+PlotCellsAnyCombination(cell_type_assignment_to_plot=CelestaObj@final_cell_type_assignment[,(CelestaObj@total_rounds+1)],
                         coords = CelestaObj@coords,
                         prior_info = prior_marker_info,
                         cell_number_to_use=c(0,1,2,3),cell_type_colors=c("yellow","red","blue"))
