@@ -77,7 +77,7 @@ CelestaObj <- CreateCelestaObject(project_title = "project_title",prior_marker_i
 ### A cell with every marker having expression probability higher than 0.9 are filtered out. 
 ### And A cell with every marker having expression probability lower than 0.4 are filtered out. 
 ### User can define the thresholds based on inspecting their data. 
-### This step is optional.
+### **This step is optional.** We suggest starting without running this step to see whether there are many doublets/triplets.
 CelestaObj <- FilterCells(CelestaObj,high_marker_threshold=0.9, low_marker_threshold=0.4)
 
 ### Assign cell types. 
@@ -90,17 +90,24 @@ CelestaObj <- AssignCells(CelestaObj,max_iteration=10,cell_change_threshold=0.01
                           high_expression_threshold_index=high_marker_threshold_iteration,
                           low_expression_threshold_index=low_marker_threshold_iteration)
 
-### Plot cells with CELESTA assigned cell types.
+### After the AssignCells() function, the CELESTA assigned cell types will be stored in the CelestaObj
+### in the field called final_cell_type_assignment with each row corresponding to a cell. 
+### The final_cell_type_assignment has assignment for each round stored in each column, the final 
+### cell types and the corresponding cell type number corresponding to the cell type specified in 
+### the cell-type signature matrix (please see Input section below).
+
+### Plotting function with CELESTA assigned cell types.
 ### The cell_number_to_use corresponds to the defined numbers in the prior cell-type signature matrix.
 ### For example, 1 corresponds to endothelial cell, 2 corresponds to tumor cell.
 ### The program will plot the corresponding cell types given in the "cell_number_to_use" parameter.
 ### To plot the "unknown" cells that are left unassigned by CELESTA, include 0 in the list.
 ### The default color for unknown cells is gray.
-### It is suggested that do not plot over 7 cell types on the same image for better visualization.
-PlotCellsAnyCombination(cell_type_assignment_to_plot=CelestaObj@final_cell_type_assignment[,5],
+PlotCellsAnyCombination(cell_type_assignment_to_plot=CelestaObj@final_cell_type_assignment[,(CelestaObj@total_rounds+1)],
                         coords = CelestaObj@coords,
-                        prior_info = prior_marker_info,
-                        cell_number_to_use=c(1,2,3),cell_type_colors=c("yellow","red","blue"))
+                        prior_info = prior_marker_info_CAF,
+                        cell_number_to_use=c(1,2,3,4),
+                        cell_type_colors=c("yellow","red","blue","green"),
+                        test_size = 0.2)
 
 ### To include unknown cells
 PlotCellsAnyCombination(cell_type_assignment_to_plot=CelestaObj@final_cell_type_assignment[,5],
