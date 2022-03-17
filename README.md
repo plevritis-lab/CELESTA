@@ -190,26 +190,40 @@ folder:data.<br/> We would suggest start with the default thresholds and
 modify them by comparing the results with the original staining
 demonstrated below.<br/> The two vectors are required for defining the
 “high\_expression\_threshold”, one for anchor cells and one for index
-cells. The thresholds defined how much the marker expression probability
-is in order to be considered as expressed. An example for defining
-high\_expression\_threshold is shown below: ![An example of high marker
-threshold](images/high_threshold_example.png) <br/> To find the proper
-threshold, the `PlotExpProb()` function can be applied. Because the
-segmented data may have some compensation in the values which are the
-inputs to CELESTA, the expression probabilities are calculated based on
-the segmented data. It’s useful to compare the expression probabilities
-with the CODEX staining for each marker.<br/> For example, for
-endothelial cells, if we plot the expression probabilities of CD31
-(left) and compare with the CD31 staining, approximately 0.9 and 0.8
-would be the right threshold for defining how much the cell should
-express CD31. `Please note:` It is suggested that for anchor cells, use
-a slightly higher threshold than index cells.<br/> ![An example of
-CD31](images/CD31_threshold.png) Another example, for tumor cells, if we
-plot the expression probabilities of Cytokerain (left) and compare with
-the Cytokeratin staining, approximately 0.9 and 0.8 would be the right
-threshold for defining how much the cell should express Cytokeratin.
-`Please note:` It is suggested that for anchor cells, use a slightly
-higher threshold than index cells. ![An example of
+cells(non-anchor cells). The thresholds defined how much the marker
+expression probability is in order to be considered as expressed. An
+example for defining high\_expression\_threshold is shown below: ![An
+example of high marker threshold](images/high_threshold_example.png)
+<br/> You can also specify the threholds using:
+
+``` r
+CelestaObj <- AssignCells(CelestaObj,max_iteration=10,cell_change_threshold=0.01,
+                          high_expression_threshold_anchor=c(0.7,0.7,0.7,0.7,0.7,0.8,0.9,0.9),
+                          low_expression_threshold_anchor=c(1,1,1,1,1,1,1,1),
+                          high_expression_threshold_index=c(0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5),
+                          low_expression_threshold_index=c(1,1,1,1,1,1,1,1))
+```
+
+The length of the vectors for the thresholds correspond to the number of
+cell types. The order of the thresholds correpond to the same order in
+the defined cell-type signature matrix.
+
+To find the proper threshold, the `PlotExpProb()` function can be
+applied. Because the segmented data may have some compensation in the
+values which are the inputs to CELESTA, the expression probabilities are
+calculated based on the segmented data. It’s useful to compare the
+expression probabilities with the CODEX staining for each marker.<br/>
+For example, for endothelial cells, if we plot the expression
+probabilities of CD31 (left) and compare with the CD31 staining,
+approximately 0.9 and 0.8 would be the right threshold for defining how
+much the cell should express CD31. `Please note:` It is suggested that
+for anchor cells, use a slightly higher threshold than index cells.<br/>
+![An example of CD31](images/CD31_threshold.png) Another example, for
+tumor cells, if we plot the expression probabilities of Cytokerain
+(left) and compare with the Cytokeratin staining, approximately 0.9 and
+0.8 would be the right threshold for defining how much the cell should
+express Cytokeratin. `Please note:` It is suggested that for anchor
+cells, use a slightly higher threshold than index cells. ![An example of
 CK](images/Cytokeratin_threshold.png)
 
 The two vectors are required for defining the “low\_marker\_threshold”,
