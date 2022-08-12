@@ -1440,9 +1440,9 @@ FindCellsToCheck <- function(current_cell_type_assignment,
     previous_level_type <- unique(lineage_info$Previous_cell_type[which(
       lineage_info$Round == round
     )])
-    previous_level_round <- lineage_info$Round[which(
+    previous_level_round <- unique(lineage_info$Round[which(
       lineage_info$Cell_type_number == previous_level_type
-    )]
+    )])
     unassigned_cells <- cell_ID[which(
       current_cell_type_assignment[, round] == 0 &
         (current_cell_type_assignment[, previous_level_round] ==
