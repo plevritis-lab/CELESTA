@@ -221,7 +221,8 @@ CreateCelestaObject <- function(project_title,
   }
   c(nb_list, all_cell_nb_in_bandwidth, cell_nb_dist) %<-% GetNeighborInfo(
     celesta_obj@coords,
-    number_of_neighbors
+    number_of_neighbors,
+    bandwidth
   )
   celesta_obj@nb_list <- nb_list
   celesta_obj@cell_nb_in_bandwidth <- all_cell_nb_in_bandwidth
