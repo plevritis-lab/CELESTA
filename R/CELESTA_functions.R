@@ -179,7 +179,17 @@ CreateCelestaObject <- function(project_title,
   celesta_obj@cell_ID <- cell_ids
   celesta_obj@original_exp <- original_exp
   celesta_obj@marker_exp_matrix <- marker_exp_matrix
-
+  
+  ##########################################################
+  ### Extremely low number of cells will cause issues in Gaussian mixture fitting
+  if(length(celesta_obj@cell_ID)<=10){
+    print("Warning:")
+    print(paste0("There are only ",length(cell_ids)," cells in the sample."))
+    print("Extremely small number of cells will cause issues in CELESTA usage.")
+    return(NULL)
+  }
+  ##########################################################
+  
   # Get user-defined prior knowledge matrix and cell lineage information
   if (!is.null(progress)) {
     progress$set(
@@ -221,7 +231,8 @@ CreateCelestaObject <- function(project_title,
   }
   c(nb_list, all_cell_nb_in_bandwidth, cell_nb_dist) %<-% GetNeighborInfo(
     celesta_obj@coords,
-    number_of_neighbors
+    number_of_neighbors,
+    bandwidth
   )
   celesta_obj@nb_list <- nb_list
   celesta_obj@cell_nb_in_bandwidth <- all_cell_nb_in_bandwidth
@@ -329,6 +340,8 @@ AssignCells <- function(celesta_obj,
                         low_expression_threshold_index = rep(1,
                           length = 50
                         ),
+                        scale_factor = 5,
+                        bandwidth = 100,
                         progress = NULL,
                         save_result = T) {
   # Cell type assignment should normally finish within 10 minutes for ~100k
@@ -355,7 +368,7 @@ AssignCells <- function(celesta_obj,
       round
     )
     number_of_cells_to_find_identity <- length(unassigned_cells)
-    print(number_of_cells_to_find_identity)
+    print(paste0("Total cells to be assigned in the current round: ",number_of_cells_to_find_identity))
 
     # Calculate scores using scoring function
     cell_type_num <-
@@ -399,10 +412,9 @@ AssignCells <- function(celesta_obj,
     print(cell_type_count)
 
     if (length(which(cell_type_count[, 2] < 1)) == length(cell_type_num)) {
-      print("Too few cells identified for certain cell type,
-            please consider relaxing threshold.")
-      return(celesta_obj)
-      break
+      print("Too few cells identified for certain cell type,please consider relaxing threshold.")
+      #return(celesta_obj)
+      next
     }
 
     # Find cells to check
@@ -439,8 +451,8 @@ AssignCells <- function(celesta_obj,
       )
     celesta_obj@current_beta <- CalculateBeta(
       celesta_obj@dist_from_nearest_assigned_cell,
-      scale_factor = 5,
-      bandwidth = 100
+      scale_factor,
+      bandwidth
     )
 
     iteration <- 1
@@ -490,7 +502,7 @@ AssignCells <- function(celesta_obj,
         length(which((old_cell_assignment -
           celesta_obj@current_cell_type_assignment[, round]) != 0)) /
           number_of_cells_to_find_identity
-      print(current_number_of_cells_changed[iteration])
+      print(paste0("Proportion of cells changed assignment in the last iteration: ",current_number_of_cells_changed[iteration]))
       if (current_number_of_cells_changed[iteration] < cell_change_threshold) {
         break
       }
@@ -532,8 +544,8 @@ AssignCells <- function(celesta_obj,
         )
       celesta_obj@current_beta <- CalculateBeta(
         celesta_obj@dist_from_nearest_assigned_cell,
-        scale_factor = 5,
-        bandwidth = 100
+        scale_factor,
+        bandwidth
       )
 
       # Update prior cell-type marker matrix
@@ -572,7 +584,7 @@ AssignCells <- function(celesta_obj,
         detail = detail
       )
     }
-  }
+  } ### Round for loop
   celesta_obj@final_cell_type_assignment <- GetFinalInferredCellTypes(
     celesta_obj@project_name,
     celesta_obj@total_rounds,
@@ -630,28 +642,32 @@ PlotCellsAnyCombination <- function(cell_type_assignment_to_plot,
                                     test_size = 1,
                                     save_plot = TRUE,
                                     output_dir = ".") {
-  # Cannot plot more than 7 cell types
-  cell_types <- prior_info[cell_number_to_use, 1]
+  # Do not recommend plotting more than 7 cell types
+  cell_types <- prior_info[cell_number_to_use,1]
   x_min <- min(coords[, 1])
   x_max <- max(coords[, 1])
   y_min <- min(coords[, 2])
   y_max <- max(coords[, 2])
   range <- c(min(x_min, y_min), max(x_max, y_max))
-
+  
   cell_index <- integer()
   cell_anno <- character()
   count <- 0
+  cell_type_exist <- integer() #exist 1, non-exist:0
   for (i in 1:length(cell_number_to_use)) {
-    unassigned_cells <- which(
-      cell_type_assignment_to_plot == cell_number_to_use[i]
-    )
-    cell_index[(count + 1):(count + length(unassigned_cells))] <-
-      unassigned_cells
-    cell_anno[(count + 1):(count + length(unassigned_cells))] <- ifelse(
-      cell_number_to_use[i] == 0, "unknown",
-      prior_info[cell_number_to_use[i], 1]
-    )
-    count <- count + length(unassigned_cells)
+    unassigned_cells <- which(cell_type_assignment_to_plot == cell_number_to_use[i])
+    if(length(unassigned_cells)==0){
+      cell_type_exist[i] <- 0
+    }else{
+      cell_type_exist[i] <- 1
+      cell_index[(count + 1):(count + length(unassigned_cells))] <-
+        unassigned_cells
+      cell_anno[(count + 1):(count + length(unassigned_cells))] <- ifelse(
+        cell_number_to_use[i] == 0, "unknown",
+        prior_info[cell_number_to_use[i], 1]
+      )
+      count <- count + length(unassigned_cells)
+    }
   }
   df_plot <- data.frame(
     x = coords[cell_index, 1],
@@ -659,10 +675,18 @@ PlotCellsAnyCombination <- function(cell_type_assignment_to_plot,
     cell_anno = cell_anno
   )
   df_plot$cell_anno <- factor(df_plot$cell_anno,
-    levels = c(cell_types, "unknown")
+                              levels = c(cell_types, "unknown")
   )
-  color_plot <- cell_type_colors[1:length(cell_number_to_use)]
-
+  ### change the unknown cell location in cell_type_exist
+  if(length(which(cell_number_to_use==0))>0){
+    cell_type_exist <- cell_type_exist[-which(cell_number_to_use==0)]
+    color_plot <- c(cell_type_colors[which(cell_type_exist==1)],NA)
+  }else{
+    color_plot <- cell_type_colors[which(cell_type_exist==1)]
+  }
+  
+  
+  
   g <- ggplot(df_plot, aes(x = x, y = y, group = cell_anno)) +
     geom_point(aes(color = cell_anno), size = test_size) +
     scale_color_manual(values = color_plot) +
@@ -680,7 +704,7 @@ PlotCellsAnyCombination <- function(cell_type_assignment_to_plot,
       legend.text = element_text(size = 12, face = "bold")
     ) +
     guides(colour = guide_legend(override.aes = list(size = 5)))
-
+  
   if (save_plot) {
     ggsave(
       path = output_dir,
@@ -925,7 +949,7 @@ GetMarkerExpMatrix <- function(prior_marker_info,
 
   original_exp <- data.matrix(imaging_data_file[, matching_markers])
   cell_ids <- seq(1, dim(original_exp)[1], by = 1)
-
+  
   if (transform_type == 1) { # arcsinh transformation
     marker_exp_matrix <- asinh(original_exp / cofactor)
     return(list(cell_ids, original_exp, marker_exp_matrix))
@@ -1261,7 +1285,7 @@ CalcMarkerActivationProbability <- function(marker_exp_matrix, figure = FALSE) {
 #'   bandwidth}
 #' }
 #' @export
-GetNeighborInfo <- function(coords, number_of_neighbors = 5, bandwidth = 100) {
+GetNeighborInfo <- function(coords, number_of_neighbors, bandwidth) {
   print("Getting the nearest neighbors")
   nb_list <- knearneigh(coords, k = number_of_neighbors)$nn
   colnames(nb_list) <- paste0("neighbor", seq(1, number_of_neighbors, by = 1))
@@ -1504,10 +1528,15 @@ FindCellsWithId <- function(current_cell_type_assignment,
 #' @return the score of the cell
 #' @export
 GetScore <- function(activation_prob_to_use, prior_info, non_NA_index) {
-  score <- apply(
-    activation_prob_to_use[, non_NA_index], 1,
-    function(x) (1 - sum((x - prior_info)^2) / length(x))
-  )
+  if(is.null(dim(activation_prob_to_use))){
+    x <- activation_prob_to_use[non_NA_index]
+    score <- (1 - sum((x - prior_info)^2) / length(x))
+  }else{
+    score <- apply(
+      activation_prob_to_use[, non_NA_index], 1,
+      function(x) (1 - sum((x - prior_info)^2) / length(x))
+    )
+  }
   return(score)
 }
 ################################################################################
@@ -1543,12 +1572,15 @@ CalculateScores <- function(marker_exp_prob,
       activation_prob_to_use, prior_info, non_NA_index
     )
   }
-
-  current_scoring_matrix[unassigned_cells, cell_type_num] <- t(apply(
-    current_scoring_matrix[unassigned_cells, cell_type_num],
-    1, function(x) x / sum(x)
-  ))
-
+  if(length(unassigned_cells)<2){
+    x <- current_scoring_matrix[unassigned_cells, cell_type_num]
+    current_scoring_matrix[unassigned_cells, cell_type_num] <- x/sum(x)
+  }else{
+    current_scoring_matrix[unassigned_cells, cell_type_num] <- t(apply(
+      current_scoring_matrix[unassigned_cells, cell_type_num],
+      1, function(x) x / sum(x)
+    ))
+  }
   return(current_scoring_matrix)
 }
 ################################################################################
@@ -1621,16 +1653,27 @@ AssignCellTypes <- function(initial_pri_matrix,
                             min_prob = 0) {
   cell_prob_list <- current_cell_prob[, cell_type_num]
   cell_type_assignment <- current_cell_type_assignment[, round]
-
-  max.prob_index <- apply(cell_prob_list[unassigned_cells, ], 1, which.max)
-  max.prob <- apply(cell_prob_list[unassigned_cells, ], 1, max)
-  min_prob_diff <- CalculateProbabilityDifference(
-    max.prob,
-    max.prob_index,
-    cell_prob_list,
-    unassigned_cells
-  )
-
+  
+  if(length(unassigned_cells)<2){
+    max.prob_index <- which.max(cell_prob_list[unassigned_cells, ])
+    max.prob <- max(cell_prob_list[unassigned_cells, ])
+    min_prob_diff <- CalculateProbabilityDifference(
+      max.prob,
+      max.prob_index,
+      cell_prob_list,
+      unassigned_cells
+    )
+  }else{
+    max.prob_index <- apply(cell_prob_list[unassigned_cells, ], 1, which.max)
+    max.prob <- apply(cell_prob_list[unassigned_cells, ], 1, max)
+    min_prob_diff <- CalculateProbabilityDifference(
+      max.prob,
+      max.prob_index,
+      cell_prob_list,
+      unassigned_cells
+    )
+  }
+  
   # Find cells with cell type max probability > threshold
   # and cell type probability difference > threshold
   # Indexing on unassigned_cells
@@ -1817,8 +1860,8 @@ GetDistFromNearestAssignedCells <- function(cell_nb_in_bandwidth,
 #' @export
 #' @md
 CalculateBeta <- function(dist_from_nearest_assigned_cell,
-                          scale_factor = 5,
-                          bandwidth = 100) {
+                          scale_factor,
+                          bandwidth) {
   beta <- scale_factor * (1 - dist_from_nearest_assigned_cell / bandwidth)
   beta[is.na(beta)] <- 0
   return(beta)
