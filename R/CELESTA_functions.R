@@ -756,7 +756,6 @@ PlotExpProb <- function(coords,
   markers_to_check <- as.character(
     colnames(prior_marker_info)[3:dim(prior_marker_info)[2]]
   )
-  all_plots = list()
   for (i in 1:length(markers_to_check)) {
     g <- PlotSingleExpProb(
       coords,
@@ -769,9 +768,8 @@ PlotExpProb <- function(coords,
       save_plot,
       output_dir
     )
-    all_plots[[i]] <- g
   }
-  ggarrange(plotlist = all.plots, common.legend = T)
+  return(g)
 }
 ################################################################################
 ################################################################################
