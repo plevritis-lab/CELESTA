@@ -411,7 +411,7 @@ AssignCells <- function(celesta_obj,
     )
     print(cell_type_count)
 
-    if (length(which(cell_type_count[, 2] < 1)) == length(cell_type_num)) {
+  if (length(which(cell_type_count[, 2] < 1)) == length(cell_type_num)) {
       print("Too few cells identified for certain cell type,please consider relaxing threshold.")
       #return(celesta_obj)
       next
@@ -430,7 +430,10 @@ AssignCells <- function(celesta_obj,
       celesta_obj@cell_ID,
       round
     )
-
+    if (length(unassigned_cells) == 0) {
+      next
+    }
+    
     # Calculate beta
     celesta_obj@nb_cell_type <- NeighborCellType(
       celesta_obj@nb_list,
@@ -566,7 +569,7 @@ AssignCells <- function(celesta_obj,
         unassigned_cells,
         cell_type_num
       )
-    }
+    } ### while loop for the iterations in the current round
 
     if (!is.null(progress)) {
       currValue <- progress$getValue()
