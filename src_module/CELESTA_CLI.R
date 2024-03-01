@@ -10,10 +10,10 @@ library(optparse)
 option_list = list(
   make_option(c("-i", "--image_data"), type = "character", default = NULL, help = "path to quantification dataset with X/Y coordinates in csv format", metavar = "character"),
   make_option(c("-s", "--signature"), type = "character", default = NULL, help = "path to the signature matrix in csv format", metavar = "character"),
-  make_option(c("--anchor_high"), type = "character", default = NULL, help = "vector as csv file (1 dimensional, 1 row)  of high marker thresholds for anchor cells", metavar = "character"),
-  make_option(c("--index_high"), type = "character", default = NULL, help = "vector as csv file (1 dimensional, 1 row) of high marker thresholds for index cells", metavar = "character"),
-  make_option(c("--anchor_low"), type = "character", default = NULL, help = "optional vector as csv file (1 dimensional, 1 row) of low marker thresholds for anchor cells", metavar = "character"),
-  make_option(c("--index_low"), type = "character", default = NULL, help = "optional vector as csv file (1 dimensional, 1 row) of low marker thresholds for index cells", metavar = "character")
+  make_option(c("--anchor_high"), type = "character", default = NULL, help = "path to vector as csv file (1 dimensional, 1 row)  of high marker thresholds for anchor cells", metavar = "character"),
+  make_option(c("--index_high"), type = "character", default = NULL, help = "path to vvector as csv file (1 dimensional, 1 row) of high marker thresholds for index cells", metavar = "character"),
+  make_option(c("--anchor_low"), type = "character", default = NULL, help = "path to voptional vector as csv file (1 dimensional, 1 row) of low marker thresholds for anchor cells", metavar = "character"),
+  make_option(c("--index_low"), type = "character", default = NULL, help = "path to voptional vector as csv file (1 dimensional, 1 row) of low marker thresholds for index cells", metavar = "character")
 );
 
 #Creating the opt_parser object from the option_list
