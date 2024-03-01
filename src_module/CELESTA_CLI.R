@@ -10,25 +10,21 @@ library(optparse)
 option_list = list(
   make_option(c("-i", "--image_data"), type = "character", default = NULL, help = "path to quantification dataset with X/Y coordinates in csv format", metavar = "character"),
   make_option(c("-s", "--signature"), type = "character", default = NULL, help = "path to the signature matrix in csv format", metavar = "character"),
-  make_option(c("--anchor_high"), type = "character", default = NULL, help = "vector (1 dimensional!) of high marker thresholds for anchor cells", metavar = "character"),
-  make_option(c("--index_high"), type = "character", default = NULL, help = "vector (1 dimensional!) of high marker thresholds for index cells", metavar = "character"),
-  make_option(c("--anchor_low"), type = "character", default = NULL, help = "optional vector (1 dimensional!) of low marker thresholds for anchor cells", metavar = "character"),
-  make_option(c("--index_low"), type = "character", default = NULL, help = "optional vector (1 dimensional!) of low marker thresholds for index cells", metavar = "character")
+  make_option(c("--anchor_high"), type = "character", default = NULL, help = "vector as csv file (1 dimensional, 1 row)  of high marker thresholds for anchor cells", metavar = "character"),
+  make_option(c("--index_high"), type = "character", default = NULL, help = "vector as csv file (1 dimensional, 1 row) of high marker thresholds for index cells", metavar = "character"),
+  make_option(c("--anchor_low"), type = "character", default = NULL, help = "optional vector as csv file (1 dimensional, 1 row) of low marker thresholds for anchor cells", metavar = "character"),
+  make_option(c("--index_low"), type = "character", default = NULL, help = "optional vector as csv file (1 dimensional, 1 row) of low marker thresholds for index cells", metavar = "character")
 );
 
 #Creating the opt_parser object from the option_list
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
-#Stating the required Options
-required_options = c("image_data", "signature", "anchor_high", "index_high")
-
 # Check, if the 4 required inputs were prompted
 if (is.null(opt$image_data) || is.null(opt$signature) || is.null(opt$anchor_high) || is.null(opt$index_high)) {
   print_help(opt_parser)
   stop("At least these 4 inputs are required: --image_data (-i), --signature (-s), --anchor_high, --index_high")
 }
-
 
 #Produce the inputs required for CELSTA algorithm
 imaging_data = read.csv(opt$image_data)
