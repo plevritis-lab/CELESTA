@@ -104,8 +104,8 @@ PlotExpProb(coords=CelestaObj@coords,
 # Output files for analysis
 marker_prob = CelestaObj@marker_exp_prob
 cell_types = CelestaObj@final_cell_type_assignment
-write.csv(marker_prob, "marker_probability_CELESTA.csv")
-write.csv(cell_types, "final_celltypes_CELESTA.csv")
+write.csv(marker_prob, "output/marker_probability_CELESTA.csv")
+write.csv(cell_types, "output/final_celltypes_CELESTA.csv")
 
 
 
